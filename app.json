@@ -1,0 +1,7 @@
+{
+    "name":"My Simple extension",
+    "description":"This extension does nothing.",
+    "backgroundscript_file":"background.js",
+    "contentscript_file":"content.js",
+    "contentscript_matches":"https://www.example.com/"
+}

@@ -1,5 +1,4 @@
-__author__ = 'Adnan Siddiqi'
-#http://extensionizr.com/!#{"modules":["hidden-mode","with-bg","with-persistent-bg","no-options","no-override"],"boolean_perms":[],"match_ptrns":[]}
+__author__ = 'Adnan Siddiqi<kadnanATgmail.com'
 import os
 import json
 
@@ -13,7 +12,7 @@ def get_json(jsondata):
     return json_object
 
 
-def generate_manifest_file(json_dict):
+def generate_manifest_text(json_dict):
     content = ''
     content = '{\n'
     content += '"manifest_version": 2,\n'
@@ -22,9 +21,11 @@ def generate_manifest_file(json_dict):
     content += '"version" : "1.0",\n'
     content += '"content_scripts" : [{\n'
     content += '\t"matches" : ["'+json_dict['contentscript_matches']+'"],\n'
-    content += '\t"js" : ["'+json_dict['contentscript_file']+'"],\n'
-    content += '\t"run_at": "document_end"\n'
-    content += '}],\n'
+    if 'contentscript_file' in json_dict:
+        content += '\t"js" : ["'+json_dict['contentscript_file']+'"],\n'
+        content += '\t"run_at": "document_end"\n'
+        content += '}],\n'
+
     if 'backgroundscript_file' in json_dict:
         content += '"background":{\n'
         content += '\t"scripts": ["'+json_dict['backgroundscript_file']+'"]\n'
@@ -34,7 +35,6 @@ def generate_manifest_file(json_dict):
     content += '\t"default_icon": "icon16.png"\n'
     content += '\t}\n'
     content += '}'
-
     return content
 
 
@@ -43,30 +43,59 @@ def read_app_json():
     file = ''
     try:
         file = open('app.json','r')
+        for line in file:
+            jsoncontent += line.replace('\n','')
     except Exception, ex:
         print(str(ex))
-        return
+    return jsoncontent
 
-    for line in file:
-        jsoncontent += line.replace('\n','')
-
-    m = get_json(jsoncontent)
-    if m:
-        if not 'name' in m:
-            print('missing "name" key in app.json')
-            return
-        if not 'description' in m:
-            print('missing "description" key in app.json')
-            return
-        print(generate_manifest_file(m))
-    else:
-        print('not a valid json file')
 
 #check if app.json exist
-if os.path.exists('app.json'):
-    read_app_json()
-else:
-    print("it does not")
+def process():
+    jsontext = read_app_json()
+    name = ''
+    contentscript_file = ''
+    backgroundscript_file  = ''
+    if jsontext != '':
+        jsondict = get_json(jsontext)
+        if jsondict is not None:
+            if not 'name' in jsondict:
+                print('missing "name" key in app.json')
+            elif not 'description' in jsondict:
+                print('missing "description" key in app.json')
+            else:
+                name = jsondict['name']
+                name = name.replace(' ','_')
+                if 'contentscript_file' in jsondict:
+                    contentscript_file = jsondict['contentscript_file']
+
+                if 'backgroundscript_file' in jsondict:
+                    backgroundscript_file = jsondict['backgroundscript_file']
+
+                manifest = generate_manifest_text(jsondict)
+                if manifest != '':
+                    try:
+                        if not os.path.exists(name):
+                            os.makedirs(name)
+                            os.chdir(name)
+                            manifest_file = open('manifest.json','w')
+                            manifest_file.write(manifest)
+                            manifest_file.flush()
+                            manifest_file.close()
+                            if contentscript_file != '':
+                                open(contentscript_file, 'w').close()
+
+                            if contentscript_file != '':
+                                open(backgroundscript_file, 'w').close()
+
+                            print('Process finished successfully. You can now visit directory "'+name+'" and check required extension files.')
+                        else:
+                            print('Directory already exist')
+                    except Exception, e:
+                        print(str(e))
+
+if __name__ == "__main__":
+    process()
 
 
 
