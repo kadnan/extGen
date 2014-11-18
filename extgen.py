@@ -1,4 +1,4 @@
-__author__ = 'Adnan Siddiqi<kadnanATgmail.com'
+__author__ = 'Adnan Siddiqi<kadnanATgmail.com>'
 import os
 import json
 
@@ -31,8 +31,8 @@ def generate_manifest_text(json_dict):
         content += '\t"scripts": ["'+json_dict['backgroundscript_file']+'"]\n'
         content += '},\n'
     content += '"browser_action": {\n'
-    content += '\t"default_title": "'+json_dict['name']+'",\n'
-    content += '\t"default_icon": "icon16.png"\n'
+    content += '\t"default_title": "'+json_dict['name']+'"\n'
+    #content += '\t"default_icon": "icon16.png"\n'
     content += '\t}\n'
     content += '}'
     return content
